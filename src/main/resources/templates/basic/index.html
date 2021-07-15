@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../css/bootstrap.min.css"
+          th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 720px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="py-4 text-center">
+        <h1>게시판</h1>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <button class="w-10 btn btn-secondary "
+                    th:if="${session.user == null}"
+                    th:onclick="|location.href='@{/user/signup}'|"
+                    th:text="회원가입">
+            </button>
+            <button class="w-10 btn btn-secondary"
+                    th:if="${session.user == null}"
+                    th:onclick="|location.href='@{/user/login}'|"
+                    th:text="로그인">
+            </button>
+            <button class="w-10 btn btn-secondary "
+                    th:if="${session.user != null}"
+                    th:onclick="|location.href='@{/user/logout}'|"
+                    th:text="로그아웃">
+            </button>
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="col text-center">
+            <table class="table table-hover">
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>날짜</th>
+                    <th>작성자</th>
+                </tr>
+                <tr th:each="item : ${boardList}">
+                    <td th:text="${item.boardId}"></td>
+                    <td><a th:href="@{/board/list/{boardId}(boardId=${item.boardId})}" th:text="${item.title}"></a></td>
+                    <td th:text="${item.boardCreateDate}"></td>
+                    <td th:text="${item.nickname}"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <button class="w-25 btn btn-primary btn-lg"
+                    th:if="${session.user != null}"
+                    th:onclick="|location.href='@{/board/add}'|"
+                    th:text="글쓰기">
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

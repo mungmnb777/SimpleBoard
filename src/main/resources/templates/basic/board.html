@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../css/bootstrap.min.css"
+          th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 720px;
+        }
+
+        .container-text {
+            max-height: 360px;
+            height: 360px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="container-fluid">
+        <h1 class="mt-4 text-center" th:text="${board.title}"></h1>
+        <div class="p-1 my-4 container-text">
+            <p th:text="${board.content}"></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <button class="w-25 btn btn-primary btn-lg"
+                    th:if="${session.userId == board.userId}"
+                    th:onclick="|location.href='@{/board/list/{boardId}/edit(boardId=${board.boardId})}'|"
+                    th:text="수정">
+            </button>
+            <button class="w-25 btn btn-secondary btn-lg"
+                    th:if="${session.userId == board.userId}"
+                    onclick="del()"
+                    th:text="삭제">
+            </button>
+        </div>
+    </div>
+    <hr th:if="${session.user != null}">
+    <div class="row" th:if="${session.user != null}">
+        <div class="col text-center">
+            <form name="addReply">
+                <input class="pt-0 p-1 w-75" type="text" id="replyContent" name="replyContent"
+                       style="{ border:1px solid black }">
+                <button class="w-10 btn btn-primary btn-sm" type="button" onclick="insertReply()">저장</button>
+            </form>
+        </div>
+    </div>
+    <div class="mt-2 row">
+        <div class="col-5">
+            <hr>
+        </div>
+        <div class="col-2">
+            <p class="mt-1 text-center">댓글</p>
+        </div>
+        <div class="col-5">
+            <hr>
+        </div>
+    </div>
+    <div id="replyTable" class="row">
+        <div class="col text-center">
+            <table class="table">
+                <tbody id="table">
+                <tr>
+                    <th class="w-20">작성자</th>
+                    <th class="w-75">내용</th>
+                    <th></th>
+                </tr>
+                <tr th:each="item : ${replyList}" th:id="|reply-id-${item.replyId}|">
+                    <td th:text="${item.nickname}"></td>
+                    <td th:text="${item.content}"></td>
+                    <td style="color:white" th:if="${item.userId != session.userId}">삭제</td>
+                    <td style="cursor:pointer" th:onclick="|javascript:deleteReply('${item.replyId}')|" th:text="삭제"
+                        th:if="${item.userId == session.userId}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" th:inline="javascript">
+
+    function del() {
+        const uri = window.location.pathname;
+
+        fetch(uri, {
+            method: "delete",
+            redirect: "follow"
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        }).catch(function (err) {
+            console.info(err + " url: " + url);
+        });
+    }
+
+    function insertReply() {
+
+        const uri = window.location.pathname;
+        const target = uri + "/reply";
+
+        const content = document.querySelector("#replyContent").value;
+
+        const split = uri.split('/');
+        const boardId = split[split.length - 1];
+
+        fetch(target, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body: JSON.stringify({content: content, userId: [[${session.userId}]], boardId: boardId, depth:1})
+        })
+        .then(response => response.json())
+        .then(reply => {
+            const table = document.querySelector("#table");
+            const tr = document.createElement('tr');
+            let td = [];
+
+            for (let i = 0; i < 3; i++) {
+                td[i] = document.createElement('td');
+            }
+
+            const nickname = document.createTextNode(reply.nickname);
+            const content = document.createTextNode(reply.content);
+            const text = document.createTextNode("삭제");
+
+            tr.setAttribute("id", "reply-id-" + reply.replyId);
+
+            td[0].appendChild(nickname);
+            td[1].appendChild(content);
+            td[2].appendChild(text);
+            td[2].setAttribute("onclick", "deleteReply(" + reply.replyId + ")");
+            td[2].setAttribute("style", "cursor:pointer")
+
+            for (let i = 0; i < 3; i++) {
+                tr.appendChild(td[i]);
+            }
+            table.appendChild(tr);
+
+            document.querySelector("#replyContent").value = "";
+
+        }).catch(function (err) {
+            console.info(err);
+        });
+    }
+
+    function deleteReply(replyId) {
+        const uri = window.location.pathname;
+        const target = uri + "/reply";
+
+        fetch(target, {
+            method: "delete",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body: JSON.stringify({replyId: replyId})
+        })
+        .then(function () {
+            const id = "#reply-id-" + replyId;
+            const tr = document.querySelector(id);
+            tr.remove();
+        })
+    }
+</script>
+</body>
+</html>

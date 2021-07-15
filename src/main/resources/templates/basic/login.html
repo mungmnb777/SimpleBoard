@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link href = "../css/bootstrap.min.css"
+        th:href = "@{/css/bootstrap.min.css}" rel="stylesheet">
+  <style>
+    .container {
+      max-width : 400px;
+    }
+  </style>
+</head>
+<body>
+<div class = "container">
+
+  <div class = "pt-5 text-center">
+    <h1>로그인</h1>
+  </div>
+
+  <form name="login">
+    <div class = "py-1">
+      <label for = "userId">아이디</label>
+      <input type="text" id="userId" name="userId" class="form-control" placeholder = "아이디를 입력하세요" >
+    </div>
+    <div class = "py-1">
+      <label for = "password">비밀번호</label>
+      <input type="password" id="password" name="password" class="form-control" placeholder = "비밀번호를 입력하세요" >
+    </div>
+    <div class = "mt-4">
+        <button class = "w-100 btn btn-primary btn-lg" type="button" onclick="toJson()">로그인</button>
+    </div>
+    <div class="mt-2 row">
+      <div class="col-5">
+        <hr>
+      </div>
+      <div class="col-2">
+        <p class = "mt-1 text-center">또는</p>
+      </div>
+      <div class="col-5">
+        <hr>
+      </div>
+    </div>
+  </form>
+  <div>
+    <button class = "w-100 btn btn-secondary btn-lg"
+            onclick="location.href='signup.html'"
+            th:onclick="|location.href='@{/user/signup}'|">회원가입</button>
+  </div>
+</div>
+
+<script type="text/javascript" th:inline="javascript">
+  function toJson() {
+    const userId = login.userId.value;
+    const password = login.password.value;
+    const uri = window.location.pathname;
+
+    fetch(uri, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        userId: userId,
+        password: password
+      }),
+      redirect: "follow"
+    }).then(response => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
+    }).catch(function (err) {
+      console.info(err + " url: " + url);
+    });
+  }
+</script>
+
+</body>
+</html>
