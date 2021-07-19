@@ -20,12 +20,13 @@
         <result column="user_id" property="userId"/>
         <result column="content" property="content"/>
         <result column="nickname" property="nickname"/>
+        <result column="reply_create_date" property="replyCreateDate"/>
         <result column="depth" property="depth"/>
         <result column="reply_group" property="replyGroup"/>
     </resultMap>
 
     <select id="findById" resultMap="replyJoinNickname">
-        SELECT reply_id, user_id, content, nickname FROM reply NATURAL JOIN user WHERE reply_id = #{replyId}
+        SELECT reply_id, user_id, content, nickname, depth, reply_group, reply_create_date FROM reply NATURAL JOIN user WHERE reply_id = #{replyId}
     </select>
 
     <select id="findGroup" resultType="int">
@@ -36,8 +37,16 @@
         SELECT * FROM reply
     </select>
 
-    <select id="findAllJoinUser" resultMap="replyJoinNickname">
-        SELECT reply_id, user_id, content, nickname FROM reply NATURAL JOIN user WHERE board_id = #{boardId} ORDER BY reply_id ASC
+    <select id="findReply" resultMap="replyJoinNickname">
+        SELECT reply_id, user_id, content, nickname, reply_create_date, depth, reply_group
+        FROM reply NATURAL JOIN user
+        WHERE board_id = #{boardId} AND depth = 1 ORDER BY reply_id ASC
+    </select>
+
+    <select id="findNestedReply" parameterType="project.board.reply.Reply" resultMap="replyJoinNickname">
+        SELECT reply_id, user_id, content, nickname, reply_create_date, depth, reply_group
+        FROM reply NATURAL JOIN user
+        WHERE board_id = #{boardId} AND reply_group = #{replyGroup} AND depth = 2 ORDER BY reply_id ASC
     </select>
 
     <insert id="insertReply" parameterType="project.board.reply.Reply" useGeneratedKeys="true" keyColumn="reply_id" keyProperty="replyId">
@@ -46,10 +55,11 @@
     </insert>
 
     <update id="updateReply" parameterType="project.board.reply.Reply">
-        UPDATE board SET content = #{content} WHERE reply_id = #{replyId}
+        UPDATE reply SET content = #{content}, reply_update_date = #{replyUpdateDate}
+        WHERE reply_id = #{replyId}
     </update>
 
-    <delete id="deleteReply">
+    <delete id="deleteReply" parameterType="project.board.reply.Reply">
         DELETE FROM reply WHERE reply_id = #{replyId}
     </delete>
 

@@ -1,0 +1,60 @@
+.reply_box_list {
+    padding: 0;
+    list-style-type: none;
+}
+
+.reply_box {
+    padding: 5px 0;
+    border-bottom: 1px solid darkgray;
+}
+
+.reply_box_nickname {
+    font-size: small;
+    margin: 5px 0;
+}
+
+.reply_box_content {
+    font-size: large;
+}
+
+.reply_box_function_buttons {
+    margin-top: 10px;
+}
+
+.reply_box_nested_btn {
+    padding: 0;
+    text-decoration: none;
+    font-size: small;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+}
+
+.reply_box_update_btn {
+    padding: 0;
+    text-decoration: none;
+    font-size: small;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+}
+
+.reply_box_delete_btn {
+    padding: 0;
+    text-decoration: none;
+    font-size: small;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+}
+
+.nested_reply_container {
+    background-color: #ececec;
+    margin: 5px 0;
+    padding-bottom: 5px;
+    padding-left: 15px;
+}
+
+.update_reply_form {
+    margin: 5px 0;
+}

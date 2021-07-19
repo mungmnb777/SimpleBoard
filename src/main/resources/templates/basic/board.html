@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <link href="../css/bootstrap.min.css"
           th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link href="../css/replyStyles.css"
+          th:href="@{/css/replyStyles.css}" rel="stylesheet">
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
     <style>
         .container {
             max-width: 720px;
@@ -33,7 +36,7 @@
             </button>
             <button class="w-25 btn btn-secondary btn-lg"
                     th:if="${session.userId == board.userId}"
-                    onclick="del()"
+                    onclick="deleteArticle()"
                     th:text="삭제">
             </button>
         </div>
@@ -42,7 +45,7 @@
     <div class="row" th:if="${session.user != null}">
         <div class="col text-center">
             <form name="addReply">
-                <input class="pt-0 p-1 w-75" type="text" id="replyContent" name="replyContent"
+                <input class="pt-0 p-1 w-75" type="text" id="reply-content" name="reply-content"
                        style="{ border:1px solid black }">
                 <button class="w-10 btn btn-primary btn-sm" type="button" onclick="insertReply()">저장</button>
             </form>
@@ -59,30 +62,56 @@
             <hr>
         </div>
     </div>
-    <div id="replyTable" class="row">
-        <div class="col text-center">
-            <table class="table">
-                <tbody id="table">
-                <tr>
-                    <th class="w-20">작성자</th>
-                    <th class="w-75">내용</th>
-                    <th></th>
-                </tr>
-                <tr th:each="item : ${replyList}" th:id="|reply-id-${item.replyId}|">
-                    <td th:text="${item.nickname}"></td>
-                    <td th:text="${item.content}"></td>
-                    <td style="color:white" th:if="${item.userId != session.userId}">삭제</td>
-                    <td style="cursor:pointer" th:onclick="|javascript:deleteReply('${item.replyId}')|" th:text="삭제"
-                        th:if="${item.userId == session.userId}"></td>
-                </tr>
-                </tbody>
-            </table>
+    <div id="reply_container">
+        <div class="col">
+            <ul class="reply_box_list">
+                <li th:each="reply:${replyList}" th:id="|reply-id-${reply.replyId}|">
+                    <div class="reply_box">
+                        <div class="reply_box_nickname" th:text="${reply.nickname}"></div>
+                        <div class="reply_box_content" th:text="${reply.content}"></div>
+                        <div class="reply_box_function_buttons">
+                            <button class="reply_box_nested_btn"
+                                    th:onclick="|javascript:getNestedReply(${reply.replyGroup})|">답글
+                            </button>
+                            <button class="reply_box_update_btn" th:if="${reply.userId == session.userId}"
+                                    th:onclick="|javascript:getUpdateForm(${reply.replyId})|">수정
+                            </button>
+                            <button class="reply_box_delete_btn" th:if="${reply.userId == session.userId}"
+                                    th:onclick="|javascript:deleteReply(${reply.replyId})|">삭제
+                            </button>
+                        </div>
+                        <div class="update_reply_form" style="display:none; padding-top:10px"
+                            th:id="|update-form-${reply.replyId}|">
+                            <div class="row">
+                                <div class="col text-center">
+                                    <input class="pt-0 p-1 w-75" type="text" name="update-reply-content"
+                                           style="{ border:1px solid black }" th:id="|update-reply-content-${reply.replyId}|">
+                                    <button class="w-10 btn btn-secondary btn-sm" type="button" th:onclick="|javascript:updateReply(${reply.replyId})|">수정</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nested_reply_container" style="display:none"
+                             th:id="|nested-reply-list-${reply.replyGroup}|">
+                            <hr th:if="${session.user != null}">
+                            <div class="row" th:if="${session.user != null}">
+                                <div class="col text-center">
+                                    <form name="addReply">
+                                        <input class="pt-0 p-1 w-75" type="text" name="nested-reply-content"
+                                               style="{ border:1px solid black }" th:id="|nested-reply-content-${reply.replyGroup}|">
+                                        <button class="w-10 btn btn-secondary btn-sm" type="button" th:onclick="|javascript:insertNestedReply(${reply.replyGroup})|">저장</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
 </div>
 <script type="text/javascript" th:inline="javascript">
 
-    function del() {
+    function deleteArticle() {
         const uri = window.location.pathname;
 
         fetch(uri, {
@@ -102,7 +131,7 @@
         const uri = window.location.pathname;
         const target = uri + "/reply";
 
-        const content = document.querySelector("#replyContent").value;
+        const content = document.querySelector("#reply-content").value;
 
         const split = uri.split('/');
         const boardId = split[split.length - 1];
@@ -112,43 +141,63 @@
             headers: {
                 "Content-Type": "application/json; charset=utf-8"
             },
-            body: JSON.stringify({content: content, userId: [[${session.userId}]], boardId: boardId, depth:1})
-        })
-        .then(response => response.json())
-        .then(reply => {
-            const table = document.querySelector("#table");
-            const tr = document.createElement('tr');
-            let td = [];
+            body: JSON.stringify({content: content, userId: [[${session.userId}]], boardId: boardId, depth: 1})
+        }).then(response => response.json())
+            .then(reply => {
+                console.log(reply);
 
-            for (let i = 0; i < 3; i++) {
-                td[i] = document.createElement('td');
-            }
-
-            const nickname = document.createTextNode(reply.nickname);
-            const content = document.createTextNode(reply.content);
-            const text = document.createTextNode("삭제");
-
-            tr.setAttribute("id", "reply-id-" + reply.replyId);
-
-            td[0].appendChild(nickname);
-            td[1].appendChild(content);
-            td[2].appendChild(text);
-            td[2].setAttribute("onclick", "deleteReply(" + reply.replyId + ")");
-            td[2].setAttribute("style", "cursor:pointer")
-
-            for (let i = 0; i < 3; i++) {
-                tr.appendChild(td[i]);
-            }
-            table.appendChild(tr);
-
-            document.querySelector("#replyContent").value = "";
-
-        }).catch(function (err) {
+            }).catch(function (err) {
             console.info(err);
         });
     }
 
+    function insertNestedReply(replyGroup){
+        const uri = window.location.pathname;
+        const target = uri + "/reply/nested-reply";
+        const contentId = "#nested-reply-content-" + replyGroup;
+        const content = document.querySelector(contentId).value;
+
+        const split = uri.split('/');
+        const boardId = split[split.length - 1];
+
+        fetch(target, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body: JSON.stringify({content: content, userId: [[${session.userId}]], boardId: boardId, depth: 2, replyGroup:replyGroup})
+        })
+    }
+
+    function getUpdateForm(replyId) {
+        const id = "#update-form-" + replyId;
+        const e = document.querySelector(id);
+
+        if (e.style.display == "none") {
+            e.style.display = "block";
+        } else if (e.style.display == "block") {
+            e.style.display = "none";
+        }
+    }
+
+    function updateReply(replyId){
+
+        const uri = window.location.pathname;
+        const target = uri + "/reply";
+        const contentId = "#update-reply-content-" + replyId;
+        const content = document.querySelector(contentId).value;
+
+        fetch(target, {
+            method: "put",
+            headers: {
+                "Content-Type":"application/json; charset=utf-8"
+            },
+            body: JSON.stringify({replyId : replyId, content:content})
+        })
+    }
+
     function deleteReply(replyId) {
+
         const uri = window.location.pathname;
         const target = uri + "/reply";
 
@@ -157,13 +206,92 @@
             headers: {
                 "Content-Type": "application/json; charset=utf-8"
             },
-            body: JSON.stringify({replyId: replyId})
-        })
-        .then(function () {
+            body: JSON.stringify({replyId : replyId})
+        }).then(function () {
             const id = "#reply-id-" + replyId;
-            const tr = document.querySelector(id);
-            tr.remove();
+            const block = document.querySelector(id);
+            block.remove();
         })
+    }
+
+    function getNestedReply(replyGroup) {
+        const uri = window.location.pathname;
+        const target = uri + "/reply/nested-reply/" + replyGroup;
+        const root = document.querySelector("#nested-reply-list-" + replyGroup);
+
+        if (!root.querySelector("ul")) {
+            fetch(target, {
+                method: "get"
+            }).then(response => response.json())
+                .then(replyList => {
+
+                    const ul = document.createElement("ul");
+                    const input = document.createElement("input");
+                    const hr = document.createElement("hr");
+
+                    ul.classList.add("reply_box_list");
+
+
+                    // -----------<li></li>영역-------------------
+                    for (let i = 0; i < replyList.length; i++) {
+                        const li = document.createElement("li");
+                        li.setAttribute("id", "reply-id-" + replyList[i].replyId);
+
+                        const replyBox = document.createElement("div");
+                        replyBox.classList.add("reply_box");
+
+                        let div = document.createElement("div");
+                        div.classList.add("reply_box_nickname");
+                        // div.innerText(replyList[i].nickname);
+                        // div.setAttribute("className", "reply_box_nickname");
+                        div.appendChild(document.createTextNode(replyList[i].nickname));
+                        replyBox.appendChild(div);
+
+                        div = document.createElement("div");
+                        div.classList.add("reply_box_content");
+                        // div.innerText(replyList[i].content);
+                        // div.setAttribute("className", "reply_box_content");
+                        div.appendChild(document.createTextNode(replyList[i].content));
+                        replyBox.appendChild(div);
+
+                        div = document.createElement("div");
+                        div.classList.add("reply_box_function_buttons")
+                        // div.setAttribute("className", "reply_box_function_buttons");
+                        //---------------<button></button>---------------------------
+                        if([[${session.userId}]] == replyList[i].userId){
+                            let button = document.createElement("button");
+                            button.classList.add("reply_box_update_btn");
+                            button.innerText = "수정";
+                            // button.setAttribute("className", "reply_box_update_btn");
+                            // button.appendChild(document.createTextNode("수정"));
+                            div.appendChild(button);
+                            button = document.createElement("button");
+                            button.classList.add("reply_box_delete_btn");
+                            button.innerText = "삭제";
+                            button.setAttribute("onclick", "deleteReply(" + replyList[i].replyId + ")");
+                            // button.setAttribute("className", "reply_box_delete_btn");
+                            // button.appendChild(document.createTextNode("삭제"));
+                            div.appendChild(button);
+                        }
+                        //-----------------------------------------------------------
+                        replyBox.appendChild(div);
+                        li.appendChild(replyBox);
+
+                        ul.appendChild(li);
+                    }
+
+                    root.appendChild(ul);
+                })
+        }
+
+        const id = "#nested-reply-list-" + replyGroup;
+        const e = document.querySelector(id);
+
+        if (e.style.display == "none") {
+            e.style.display = "block";
+        } else if (e.style.display == "block") {
+            e.style.display = "none";
+        }
     }
 </script>
 </body>

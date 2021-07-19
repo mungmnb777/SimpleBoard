@@ -9,6 +9,7 @@ import project.board.reply.ReplyJoinNicknameDto;
 import project.board.reply.service.ReplyService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -21,12 +22,10 @@ public class ReplyController {
     @ResponseBody
     @PostMapping
     public ReplyJoinNicknameDto insertReply(
-            @PathVariable int boardId,
             @RequestBody Reply reply
             ) {
         LocalDateTime date = LocalDateTime.now();
         reply.setReplyCreateDate(date);
-        reply.setBoardId(boardId);
         reply.setReplyGroup(service.findGroup() + 1);
         service.insertReply(reply);
         
@@ -36,12 +35,46 @@ public class ReplyController {
     }
 
     @ResponseBody
-    @DeleteMapping
-    public String deleteReply(@RequestBody Reply reply) {
-        int replyId = reply.getReplyId();
+    @PostMapping("/nested-reply")
+    public ReplyJoinNicknameDto insertNestedReply(
+            @RequestBody Reply reply
+    ) {
+        LocalDateTime date = LocalDateTime.now();
+        reply.setReplyCreateDate(date);
+        service.insertReply(reply);
 
-        service.deleteReply(replyId);
+        return service.findById(reply.getReplyId());
+    }
+
+    @ResponseBody
+    @PutMapping
+    public String updateReply(@RequestBody Reply reply){
+        LocalDateTime date = LocalDateTime.now();
+        reply.setReplyUpdateDate(date);
+        service.updateReply(reply);
 
         return "ok";
+    }
+
+    @ResponseBody
+    @DeleteMapping
+    public String deleteReply(@RequestBody Reply reply) {
+
+        service.deleteReply(reply);
+
+        return "ok";
+    }
+
+    @ResponseBody
+    @GetMapping("/nested-reply/{replyGroup}")
+    public List<ReplyJoinNicknameDto> getNestedReply(
+            @PathVariable int boardId,
+            @PathVariable int replyGroup
+    ){
+        Reply reply = new Reply();
+        reply.setBoardId(boardId);
+        reply.setReplyGroup(replyGroup);
+
+        return service.findNestedReply(reply);
     }
 }

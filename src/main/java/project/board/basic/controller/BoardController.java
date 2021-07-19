@@ -35,7 +35,7 @@ public class BoardController {
     public String getContent(@PathVariable int boardId, Model model) {
 
         model.addAttribute("board", service.findById(boardId));
-        model.addAttribute("replyList", replyService.findAllJoinUser(boardId));
+        model.addAttribute("replyList", replyService.findReply(boardId));
 
         return "basic/board";
     }

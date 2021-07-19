@@ -33,13 +33,13 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public List<Reply> findAll() {
-        return mapper.findAll();
+    public List<ReplyJoinNicknameDto> findReply(int boardId) {
+        return mapper.findReply(boardId);
     }
 
     @Override
-    public List<ReplyJoinNicknameDto> findAllJoinUser(int boardId) {
-        return mapper.findAllJoinUser(boardId);
+    public List<ReplyJoinNicknameDto> findNestedReply(Reply reply) {
+        return mapper.findNestedReply(reply);
     }
 
     @Override
@@ -47,15 +47,15 @@ public class ReplyServiceImpl implements ReplyService {
         return mapper.insertReply(reply);
     }
 
+
     @Override
     public void updateReply(Reply reply) {
-
+        mapper.updateReply(reply);
     }
 
     @Override
-    public void deleteReply(int replyId) {
-
-        mapper.deleteReply(replyId);
+    public void deleteReply(Reply reply) {
+            mapper.deleteReply(reply);
     }
 
     @Override

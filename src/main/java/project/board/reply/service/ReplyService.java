@@ -11,15 +11,15 @@ public interface ReplyService {
 
     Integer findGroup();
 
-    List<Reply> findAll();
+    List<ReplyJoinNicknameDto> findReply(int boardId);
 
-    List<ReplyJoinNicknameDto> findAllJoinUser(int boardId);
+    List<ReplyJoinNicknameDto> findNestedReply(Reply reply);
 
     int insertReply(Reply reply);
 
     void updateReply(Reply reply);
 
-    void deleteReply(int replyId);
+    void deleteReply(Reply reply);
 
     void deleteAll(int boardId);
 }
