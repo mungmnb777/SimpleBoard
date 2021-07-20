@@ -8,6 +8,9 @@
         .container {
             max-width: 720px;
         }
+        .pagination {
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -50,6 +53,23 @@
                     <td th:text="${item.nickname}"></td>
                 </tr>
             </table>
+        </div>
+    </div>
+    <div class="paging-container">
+        <div class="row">
+            <div class="col text-center">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" href = "?page=1" th:href = "@{/(page=${paging.prevBlock})}">이전</a>
+                    </li>
+                    <li class="page-item" th:each="page : ${#numbers.sequence(paging.startPage, paging.endPage)}">
+                        <a class="page-link" href = "?page=1" th:href = "@{/(page=${page})}" th:text="${page}"></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href = "?page=1" th:href = "@{/(page=${paging.nextBlock})}">다음</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="row">

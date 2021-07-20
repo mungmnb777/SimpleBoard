@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import project.board.basic.Board;
 import project.board.basic.BoardJoinNicknameDto;
+import project.board.basic.BoardPaging;
 import project.board.basic.mapper.BoardMapper;
 
 import java.util.List;
@@ -16,11 +17,16 @@ public class BoardServiceImpl implements BoardService {
     @Autowired
     private BoardMapper mapper;
 
+    @Override
+    public int findAllCnt() {
+        return mapper.findAllCnt();
+    }
+
     public List<Board> findAll() {
         return mapper.findAll();
     }
 
-    public List<BoardJoinNicknameDto> findAllJoinUser() { return mapper.findAllJoinUser(); }
+    public List<BoardJoinNicknameDto> findAllJoinUser(BoardPaging paging) { return mapper.findAllJoinUser(paging); }
 
     public Board findById(int boardId) {
         return mapper.findById(boardId);

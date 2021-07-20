@@ -19,15 +19,20 @@
         <result column="nickname" property="nickname"/>
     </resultMap>
 
+    <select id="findAllCnt" resultType="int">
+        SELECT count(*) as totalPostCnt FROM board
+    </select>
+
     <select id="findAll" resultMap="board">
         SELECT * FROM board
     </select>
 
-    <select id="findAllJoinUser" resultMap="boardJoinNickname">
+    <select id="findAllJoinUser" parameterType="project.board.basic.BoardPaging" resultMap="boardJoinNickname">
         SELECT board_id, title, board_create_date, nickname
         FROM board, user
         WHERE board.user_id = user.user_id
-        ORDER BY board_create_date DESC
+        ORDER BY board_id DESC
+        LIMIT #{startIndex}, #{postPerPage}
     </select>
 
     <select id="findById" resultMap="board">

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import project.board.basic.Board;
+import project.board.basic.BoardPaging;
 import project.board.basic.service.BoardService;
 import project.board.reply.service.ReplyService;
 import project.board.user.User;
@@ -25,9 +26,15 @@ public class BoardController {
     ReplyService replyService;
 
     @GetMapping
-    public String init(Model model) {
+    public String init(Model model, @RequestParam(defaultValue = "1") int page) {
 
-        model.addAttribute("boardList", service.findAllJoinUser());
+        int totalPostCnt = service.findAllCnt();
+
+        BoardPaging paging = new BoardPaging(totalPostCnt, page);
+
+        model.addAttribute("boardList", service.findAllJoinUser(paging));
+        model.addAttribute("paging", paging);
+
         return "basic/index";
     }
 
